@@ -199,11 +199,11 @@ describe("Account unit test",function(){
 						return done(err);
 					}
 					res.body.length.should.equal(1);
-					console.log(res.body);
 					done();
 				})
 		});
 
+		var liHistoryId = null;
 		it("Add an account history entry",function(done){
 			server.post("/accounts/"+liNewAccountId+"/history")
 				.send({
@@ -217,8 +217,90 @@ describe("Account unit test",function(){
 						return done(err);
 					}
 					res.body.history.length.should.equal(2);
+					liHistoryId = res.body.history[1]._id;
 					done();
 				})
 		});
+
+		it("Get an value history",function(done){
+			server.get("/accounts/"+liNewAccountId+"/history/"+liHistoryId)
+				.expect(200)
+				.expect("Content-type",/json/)
+				.end(function(err,res){
+					if (err) {
+						return done(err);
+					}
+					res.body._id.should.equal(liHistoryId);
+					done();
+				});
+		});
+
+		it("Update an value history",function(done){
+			server.put("/accounts/"+liNewAccountId+"/history/"+liHistoryId)
+				.send({
+					"date" : "2016-05-05",
+					"value" : "8888"
+				})
+				.expect(200)
+				.expect("Content-type",/json/)
+				.end(function(err,res){
+					if (err) {
+						return done(err);
+					}
+
+					server.get("/accounts/"+liNewAccountId+"/history/"+liHistoryId)
+						.expect(200)
+						.expect("Content-type",/json/)
+						.end(function(err,res){
+							if (err) {
+								return done(err);
+							}
+							res.body.value.should.equal(888800);
+							res.body.date.should.equal("2016-05-05T00:00:00.000Z");
+							done();
+						});
+				});
+		});
+
+		it("Update an inexistant value history",function(done){
+			server.put("/accounts/"+liNewAccountId+"/history/5465136")
+				.send({
+					"date" : "2016-05-05",
+					"value" : "8888"
+				})
+				.expect(500).end(function(err,res){
+					done();
+				});
+		});
+
+		
+		it("Delete all account history entry",function(done){
+			server.delete("/accounts/"+liNewAccountId+"/history/")
+				.send({
+					"date" : "2016-05-05",
+					"value" : "200"
+				})
+				.expect(200)
+				.expect("Content-type",/json/)
+				.end(function(err,res){
+					if (err) {
+						return done(err);
+					}
+					res.body.history.length.should.equal(0);
+					done();
+				})
+		});
+
+		/*it("Add an value composition",function(done){
+			server.get("/accounts/"+liNewAccountId)
+				.expect(200)
+				.expect("Content-type",/json/)
+				.end(function(err,res){
+					if (err) {
+						return done(err);
+					}
+					done();
+				});
+		});*/
 	});
 });

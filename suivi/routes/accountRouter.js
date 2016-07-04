@@ -1,4 +1,5 @@
 var express = require('express');
+var HttpStatus = require('http-status-codes');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
@@ -11,7 +12,6 @@ accountRouter.route('/')
 		Accounts.create(req.body,function(err,account) {
 			if(err) throw err;
 
-			console.log('New account created!');
 			var id = account._id;
 			res.json(id);
 		});
@@ -90,56 +90,58 @@ accountRouter.route('/:accountId/history')
 			});
 		});
 	})
-
-	/*
 	.delete(function(req,res,next) {
-		Dishes.findById(req.parmas.dishId,function (err,dish) {
+		Accounts.findById(req.params.accountId,function (err,account) {
 			if(err) throw err;
-			for (var i = (dish.comments.length -1); i >= 0;i--) {
-				dish.comments.id(dish.comments[i]._id).remove();
+			for (var i = (account.history.length -1); i >= 0;i--) {
+				account.history.id(account.history[i]._id).remove();
 			}
 
-			dish.save(function(err,result) {
+			account.save(function(err,result) {
 				if (err) throw err;
-				res.writeHead(200,{
-					'Content-Type': 'text/plain'
-				});
-				res.end('Deleted all comments!');
+				res.json(account);
 			});
 		})
 	});
 
-dishRouter.route('/:dishId/comments/:commentId')
+
+accountRouter.route('/:accountId/history/:valueId')
 	.get(function(req,res,next) {
-		Dishes.findById(req.params.dishId,function(err,dish) {
+		Accounts.findById(req.params.accountId,function(err,account) {
 			if (err) throw err;
-			res.json(dish.comments.id(req.params.commentId));
+			res.json(account.history.id(req.params.valueId));
 		})
 	})
 	.put(function(req,res,next){
-		Dishes.findById(req.params.dishId,function(err,dish){
+		Accounts.findById(req.params.accountId,function(err,account){
 			if (err) throw err;
 
-			dish.comments.id(req.params.commentId).remove();
-			dish.comments.push(req.body);
+			if(account.history.id(req.params.valueId) && req.body.value &&  req.body.date) {
+				account.history.id(req.params.valueId).value = req.body.value;
+				account.history.id(req.params.valueId).date = req.body.date;
 
-			dish.save(function(err,dish) {
-				if (err) throw err;
-				console.log('Updated comments');
-				res.json(dish);
-			});
+				account.save(function(err,account) {
+					if (err) throw err;
+					res.json(account);
+				});
+			}
+			else {
+				res.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.send({
+					error: HttpStatus.getStatusText(HttpStatus.INTERNAL_SERVER_ERROR)
+				});
+			}
 		});
 	})
 	.delete(function(req,res,next) {
-		Dishes.findById(req.parmas.dishId,function (err,dish) {
+		Accounts.findById(req.params.accountId,function (err,account) {
 			if(err) throw err;
 
-			dish.comments.id(req.parmas.commentId).remove();
-			dish.save(function(err,resp) {
+			account.history.id(req.params.valueId).remove();
+			account.save(function(err,resp) {
 				if (err) throw err;
 				res.json(resp);
 			});
 		})
 	});
-*/
 module.exports = accountRouter;
