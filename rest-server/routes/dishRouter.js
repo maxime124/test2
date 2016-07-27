@@ -8,7 +8,6 @@ var dishRouter = express.Router();
 dishRouter.use(bodyParser.json());
 dishRouter.route('/')
 	.post(function(req,res,next){
-		console.log('aaaaa');
 		Dishes.create(req.body,function(err,dish) {
 			if(err) throw err;
 
@@ -23,7 +22,6 @@ dishRouter.route('/')
 	})
 
 	.get(function(req,res,next){
-		console.log('oo');
 		Dishes.find({},function (err,dish) {
 			if (err) throw err;
 			res.json(dish);
@@ -116,7 +114,6 @@ dishRouter.route('/:dishId/comments/:commentId')
 	.put(function(req,res,next){
 		Dishes.findById(req.params.dishId,function(err,dish){
 			if (err) throw err;
-
 			dish.comments.id(req.params.commentId).remove();
 			dish.comments.push(req.body);
 
@@ -128,10 +125,10 @@ dishRouter.route('/:dishId/comments/:commentId')
 		});
 	})
 	.delete(function(req,res,next) {
-		Dishes.findById(req.parmas.dishId,function (err,dish) {
+		Dishes.findById(req.params.dishId,function (err,dish) {
 			if(err) throw err;
 
-			dish.comments.id(req.parmas.commentId).remove();
+			dish.comments.id(req.params.commentId).remove();
 			dish.save(function(err,resp) {
 				if (err) throw err;
 				res.json(resp);

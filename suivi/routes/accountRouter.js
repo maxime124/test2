@@ -116,9 +116,10 @@ accountRouter.route('/:accountId/history/:valueId')
 		Accounts.findById(req.params.accountId,function(err,account){
 			if (err) throw err;
 
-			if(account.history.id(req.params.valueId) && req.body.value &&  req.body.date) {
+			if(account.history.id(req.params.valueId) && req.body.value && req.body.date && req.body.composition) {
 				account.history.id(req.params.valueId).value = req.body.value;
 				account.history.id(req.params.valueId).date = req.body.date;
+				account.history.id(req.params.valueId).composition = req.body.composition;
 
 				account.save(function(err,account) {
 					if (err) throw err;
@@ -144,4 +145,13 @@ accountRouter.route('/:accountId/history/:valueId')
 			});
 		})
 	});
+
+accountRouter.route('/:accountId/history/:valueId/composition')
+	.get(function(req,res,next) {
+		Accounts.findById(req.params.accountId,function(err,account) {
+			if (err) throw err;
+			res.json(account.history.id(req.params.valueId).composition);
+		})
+	});
+
 module.exports = accountRouter;
