@@ -100,6 +100,7 @@ describe("Account unit test",function(){
 					return done(err);
 				}
 				liSecondAccountId = res.body;
+
 				done();
 			})
 	});
@@ -290,17 +291,5 @@ describe("Account unit test",function(){
 					done();
 				})
 		});
-
-		/*it("Add an value composition",function(done){
-			server.get("/accounts/"+liNewAccountId)
-				.expect(200)
-				.expect("Content-type",/json/)
-				.end(function(err,res){
-					if (err) {
-						return done(err);
-					}
-					done();
-				});
-		});*/
 	});
 });

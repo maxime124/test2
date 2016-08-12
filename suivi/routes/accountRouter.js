@@ -2,6 +2,7 @@ var express = require('express');
 var HttpStatus = require('http-status-codes');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var _ = require('underscore');
 
 var Accounts = require('../models/accounts');
 
@@ -30,6 +31,24 @@ accountRouter.route('/')
 		})
 	});
 
+accountRouter.route('/sold')
+	.get(function(req,res,next) {
+		Accounts.find({},function(err,accounts) {
+			if (err) throw err;
+			if(accounts.length) {
+				console.log(accounts.length);
+				var liSold = 0;
+				for(var i=0;i<accounts.length;i++) {
+					liSold += accounts[i].value.value;
+				}
+				liSold = liSold / 100;
+				/*accounts.each(function(){
+					console.log(this);
+				});*/
+				res.json(liSold.toFixed(2));
+			}
+		 });
+	});
 
 accountRouter.route('/:accountId')
 	.get(function(req,res,next){
@@ -143,5 +162,45 @@ accountRouter.route('/:accountId/history/:valueId')
 				res.json(resp);
 			});
 		})
+	});
+
+//Manage value evolution
+accountRouter.route('/:accountId/value')
+	.post(function(req,res,next){
+		Accounts.findById(req.params.accountId,function(err,account){
+			if (err) throw err;
+			//Save previous value into the history
+			var loLastValue = account.value;
+			account.history.push(loLastValue);
+
+			//Add the new value
+			account.value = req.body;
+
+			//Save account
+			account.save(function(err,account) {
+				if (err) throw err;
+				res.json(account);
+			});
+		});
+	});
+
+//Get account evolution since a given date
+accountRouter.route('/:accountId/value/:date')
+	.get(function(req,res,next){
+		Accounts.findById(req.params.accountId,function(err,account){
+			if (err) throw err;
+			//Save previous value into the history
+			var loLastValue = account.value;
+			account.history.push(loLastValue);
+
+			//Add the new value
+			account.value = req.body;
+
+			//Save account
+			account.save(function(err,account) {
+				if (err) throw err;
+				res.json(account);
+			});
+		});
 	});
 module.exports = accountRouter;
