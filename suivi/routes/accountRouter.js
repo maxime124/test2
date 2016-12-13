@@ -7,19 +7,52 @@ var _ = require('underscore');
 var Accounts = require('../models/accounts');
 
 var accountRouter = express.Router();
+accountRouter.use(function(req, res, next){
+	// Website you wish to allow to connect
+	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
+
+	// Request methods you wish to allow
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+	// Request headers you wish to allow
+	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+	// Set to true if you need the website to include cookies in the requests sent
+	// to the API (e.g. in case you use sessions)
+	res.setHeader('Access-Control-Allow-Credentials', true);
+
+	// Pass to next layer of middleware
+	next();
+});
 accountRouter.use(bodyParser.json());
+
 accountRouter.route('/')
 	.post(function(req,res,next){
-		Accounts.create(req.body,function(err,account) {
-			if(err) throw err;
+		//Percentage calculation
+		Accounts.find({},function (err,accounts) {
+			if (err) throw err;
+			var liSomme = liPercentage = 0;
+			_.each(accounts,function(acc){
+				liSomme += acc.value.value;
+			});
 
-			var id = account._id;
-			res.json(id);
+			if(liSomme) {
+				liPercentage = Math.round(req.body.value.value*100/liSomme);
+			}
+			req.body.percentage = liPercentage;
+			Accounts.create(req.body,function(err,account) {
+				if(err) throw err;
+
+				var id = account._id;
+				res.json(id);
+			});
 		});
+
 	})
 	.get(function(req,res,next){
 		Accounts.find({},function (err,account) {
 			if (err) throw err;
+			console.log(account);
 			res.json(account);
 		});
 	})

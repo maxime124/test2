@@ -25,9 +25,7 @@ var accountValueTypeSchema = new Schema({
 		required: true
 	},
 	percentage: {
-		type:Number,
-		min:0,
-		max:100
+		type:Number
 	}
 });
 
@@ -57,7 +55,10 @@ var accountSchema = new Schema({
 		required: true
 	},
 	history: [accountValueSchema],
-	payment: [paymentSchema]
+	payment: [paymentSchema],
+	percentage: {
+		type:Number
+	}
 }, {
 	timestamps: true
 });
