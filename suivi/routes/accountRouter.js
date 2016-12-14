@@ -28,33 +28,19 @@ accountRouter.use(bodyParser.json());
 
 accountRouter.route('/')
 	.post(function(req,res,next){
-		//Percentage calculation
-		Accounts.find({},function (err,accounts) {
-			if (err) throw err;
-			var liSomme = liPercentage = 0;
-			_.each(accounts,function(acc){
-				liSomme += acc.value.value;
-			});
+		Accounts.create(req.body,function(err,account) {
+			if(err) throw err;
 
-			if(liSomme) {
-				liPercentage = Math.round(req.body.value.value*100/liSomme);
-			}
-			req.body.percentage = liPercentage;
-			Accounts.create(req.body,function(err,account) {
-				if(err) throw err;
-
-				var id = account._id;
-				res.json(id);
-			});
+			Accounts.majPercentage();
+			var id = account._id;
+			res.json(id);
 		});
-
 	})
 	.get(function(req,res,next){
 		Accounts.find({},function (err,account) {
 			if (err) throw err;
-			console.log(account);
 			res.json(account);
-		});
+		}).sort('-value.value');
 	})
 	.delete(function(req,res,next){
 		Accounts.remove({},function(err,resp){
@@ -69,15 +55,11 @@ accountRouter.route('/sold')
 		Accounts.find({},function(err,accounts) {
 			if (err) throw err;
 			if(accounts.length) {
-				console.log(accounts.length);
 				var liSold = 0;
 				for(var i=0;i<accounts.length;i++) {
 					liSold += accounts[i].value.value;
 				}
 				liSold = liSold / 100;
-				/*accounts.each(function(){
-					console.log(this);
-				});*/
 				res.json(liSold.toFixed(2));
 			}
 		 });
@@ -113,6 +95,7 @@ accountRouter.route('/:accountId')
 			if (err) throw err;
 
 			if (resp && resp._id && resp._id == req.params.accountId) {
+				Accounts.majPercentage();
 				res.json(resp);
 			}
 			else {

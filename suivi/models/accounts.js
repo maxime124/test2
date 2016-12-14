@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
@@ -62,6 +63,27 @@ var accountSchema = new Schema({
 }, {
 	timestamps: true
 });
+
+accountSchema.statics.majPercentage = function() {
+	Accounts.find({},function (err,accounts) {
+		if (err) throw err;
+		var liSomme = 0;
+		_.each(accounts,function(acc){
+			liSomme += acc.value.value;
+		});
+
+		_.each(accounts,function(acc){
+			acc.percentage = Math.round((acc.value.value/liSomme)*10000)/100;
+			Accounts.findByIdAndUpdate(acc._id,{
+					$set: acc
+				},
+				{},
+				function (err,account) {
+					if (err) console.log(err,account);
+				});
+		});
+	});
+}
 
 var Accounts = mongoose.model('Account',accountSchema);
 module.exports = Accounts;
